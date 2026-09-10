@@ -52,14 +52,17 @@ function ns.SetupOptions()
         { "Lock the HUD in place (it shows sample totems while unlocked)", "locked" },
         { "Keep a dimmed row for each element with no totem down", "showEmptySlots" },
         { "Show a border around the HUD", "showBorder" },
+        { "Hide the default totem timers under the player frame", "hideBlizzardTotems",
+            function() ns.ApplyBlizzardTotems() end },
     }
     local previous = versionText
     for _, def in ipairs(defs) do
-        local label, key = def[1], def[2]
+        local label, key, onChange = def[1], def[2], def[3]
         local check = MakeCheckbox(panel, label,
             function() return opts[key] end,
             function(v)
                 opts[key] = v
+                if onChange then onChange(v) end
                 ns.RefreshHud()
             end)
         check:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", previous == versionText and -4 or 0,

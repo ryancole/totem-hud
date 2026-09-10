@@ -13,6 +13,8 @@ nothing.
   and scan, event wiring, slash commands
 - `src/Hud.lua` — the HUD panel: one element-colored bar per totem down,
   ticking on a throttled OnUpdate while anything is out
+- `src/BlizzardTotems.lua` — hides and restores the default totem timers
+  under the player frame, per the option
 - `src/Options.lua` — settings panel (Options -> AddOns -> Totem HUD)
 - `assets/` — `logo.png` is the project art; `logo.tga` (addon list icon)
   is baked from it by `etc/logo.py` (Python + Pillow)
@@ -84,3 +86,6 @@ git tag v0.1.0 && git push origin master --tags
   on, the list is always four rows tall and never shifts)
 - Show a border around the HUD (on by default; off leaves just the
   translucent background behind the bars)
+- Hide the default totem timers under the player frame (off by default).
+  The default frame stops updating and stays hidden; unchecking brings it
+  back without a reload. The change waits for combat to end

@@ -9,4 +9,5 @@
 
 src\Core.lua
 src\Hud.lua
+src\BlizzardTotems.lua
 src\Options.lua
