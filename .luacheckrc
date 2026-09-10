@@ -22,7 +22,7 @@ globals = {
 -- WoW-provided API, read-only
 read_globals = {
     -- Lua extensions in the WoW environment
-    "strlower", "strsplit", "strtrim",
+    "strlower", "strsplit", "strtrim", "wipe",
     -- API functions
     "CreateFrame", "GetTime", "GetTotemInfo", "GetTotemTimeLeft",
     "InCombatLockdown", "PlaySoundFile", "UnitClass",

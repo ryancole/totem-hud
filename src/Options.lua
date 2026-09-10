@@ -74,6 +74,7 @@ function ns.SetupOptions()
         { "Hide the default totem timers under the player frame", "hideBlizzardTotems",
             function() ns.ApplyBlizzardTotems() end },
         { "Play a sound when a totem is about to expire", "expireSound" },
+        { "Play a sound when a totem is killed before it expires", "deathSound" },
     }
     local checks = {}
     local function SyncChildren()

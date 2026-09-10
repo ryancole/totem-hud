@@ -6,6 +6,7 @@ local ADDON_NAME, ns = ...
 
 local opts -- TotemHudDB.options (account-wide)
 local isShaman = false
+local TOTEMIC_CALL = 36936 -- spell ID; recalls every totem at once
 
 -------------------------------------------------------------------------------
 -- SavedVariables
@@ -32,6 +33,8 @@ ns.optionDefaults = {
                                 -- the player frame
     expireSound = true,     -- play the "tote" clip once as a totem
                             -- crosses under the warning time
+    deathSound = true,      -- play it too when a totem is killed before
+                            -- reaching the warning time
     fontSize = 7,           -- bar text size, in points
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",
@@ -116,7 +119,13 @@ frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "PLAYER_ENTERING_WORLD" then
         -- Totems don't survive a loading screen, but the slot data does
         -- get refreshed here, so re-read it
+        ns.ForgetTotems()
         ns.UpdateHud()
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+        local _, _, spellID = ...
+        if spellID == TOTEMIC_CALL then
+            ns.NoteRecall()
+        end
     elseif event == "ADDON_LOADED" then
         if ... == ADDON_NAME then
             InitDB()
@@ -132,6 +141,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
             ns.ApplyBlizzardTotems()
             self:RegisterEvent("PLAYER_TOTEM_UPDATE")
             self:RegisterEvent("PLAYER_ENTERING_WORLD")
+            -- To tell a Totemic Call from totems being killed
+            self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
         end
     end
 end)

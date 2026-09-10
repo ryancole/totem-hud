@@ -23,9 +23,13 @@ local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below th
 local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
 -- Ryan saying "tote", played once per totem as it crosses the warning
--- time. On the Master channel so it is heard even with effects turned
--- down; it is the whole point of the alert.
-local EXPIRE_SOUND = "Interface\\AddOns\\" .. ADDON_NAME .. "\\assets\\tote.ogg"
+-- time, and again if a totem is killed before ever reaching it. On the
+-- Master channel so it is heard even with effects turned down; it is
+-- the whole point of the alert.
+local ALERT_SOUND = "Interface\\AddOns\\" .. ADDON_NAME .. "\\assets\\tote.ogg"
+-- Totems vanishing this soon after a Totemic Call were recalled, not
+-- killed, so they don't get the death alert
+local RECALL_WINDOW = 1
 local TICK = 0.1 -- seconds between bar updates
 local SAMPLE_DURATION = 120
 -- Cascadia Mono (SIL OFL), the bar text's face; the game ships no
@@ -41,6 +45,10 @@ local ticking = false
 -- so a re-layout (another totem dropped, an option toggled) doesn't
 -- replay it for the same totem
 local warnedAt = {}
+-- The totem each slot held at the last real scan, so a slot that has
+-- gone empty can be checked for how much time its totem had left
+local seen = {}
+local recalledAt = 0 -- GetTime() of the last Totemic Call
 
 local function Anchor()
     frame:ClearAllPoints()
@@ -158,7 +166,7 @@ local function Tick(row, totem)
         if warnedAt[slot] ~= totem.startTime then
             warnedAt[slot] = totem.startTime
             if opts.expireSound and not totem.sample then
-                PlaySoundFile(EXPIRE_SOUND, "Master")
+                PlaySoundFile(ALERT_SOUND, "Master")
             end
         end
     else
@@ -203,12 +211,48 @@ local function Samples()
     return list
 end
 
+-- Plays the alert for any totem that vanished with more than the warning
+-- time left: it was killed, not expired (under the warning time the
+-- expiry alert already played). A slot holding a different totem than
+-- last time was re-dropped by the player, and totems gone within a
+-- moment of a Totemic Call were recalled; neither is a death.
+local function NoteDeaths(totems)
+    local now = {}
+    for _, totem in ipairs(totems) do
+        now[totem.def.slot] = totem
+    end
+    local recalled = GetTime() - recalledAt < RECALL_WINDOW
+    for _, def in ipairs(ns.slots) do
+        local was = seen[def.slot]
+        if was and not now[def.slot] and not recalled
+            and ns.TimeLeft(was) > WARN_SECONDS and opts.deathSound then
+            PlaySoundFile(ALERT_SOUND, "Master")
+        end
+        seen[def.slot] = now[def.slot]
+    end
+end
+
+-- Totems don't survive a loading screen; forget them so the empty slots
+-- afterwards don't read as deaths
+function ns.ForgetTotems()
+    wipe(seen)
+end
+
+-- Called by Core.lua when the player casts Totemic Call
+function ns.NoteRecall()
+    recalledAt = GetTime()
+end
+
 -- Lays the rows out for the current totems and starts or stops the
 -- timer. Called on every totem change and on option changes.
 function ns.UpdateHud()
     if not frame then return end
     local unlocked = not opts.locked
-    active = unlocked and Samples() or ns.ScanTotems()
+    -- Always scan the real totems, even while showing samples, so a
+    -- death is never missed or misread once the HUD is locked again
+    local totems = ns.ScanTotems()
+    NoteDeaths(totems)
+    active = unlocked and Samples() or totems
 
     -- Which row each totem sits in: slot order, so a totem never moves
     -- when another is dropped or dies

@@ -39,8 +39,16 @@ the totem's start time and duration and updates the time text. Under ten
 seconds the time turns red, the quest "!" icon pulses just left of the
 row, outside the panel, and `assets/tote.ogg` (Ryan saying "tote") plays
 once on the Master channel. The sound fires once per totem, keyed on the
-totem's start time, so a re-layout can't replay it. When the last totem goes, the ticker stops
-and the panel hides. The rank suffix on totem names ("Mana Spring Totem
+totem's start time, so a re-layout can't replay it. The same clip plays
+when a totem is killed early: each scan remembers what every slot held,
+and a slot that has gone empty while its totem still had more than ten
+seconds left means something killed it (under ten seconds the expiry
+alert already played). A slot holding a different totem was re-dropped,
+and slots emptied within a second of a Totemic Call (spotted by its
+`UNIT_SPELLCAST_SUCCEEDED`) were recalled; neither counts. The memory
+is cleared on `PLAYER_ENTERING_WORLD`, since totems don't survive a
+loading screen. When the last totem goes, the ticker stops and the
+panel hides. The rank suffix on totem names ("Mana Spring Totem
 IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
 `assets`, since the game ships no monospace face; if the font fails to
 load, the stock small font stands in at the same size.
@@ -105,6 +113,9 @@ git tag v0.1.0 && git push origin master --tags
     is on
 - Font size, 6 to 16 (7 by default). Rows grow to fit a large font
 - Play a sound when a totem is about to expire (on by default)
+- Play a sound when a totem is killed before it expires (on by default).
+  Re-dropping a totem over an old one, or recalling them with Totemic
+  Call, doesn't count
 - Hide the default totem timers under the player frame (off by default).
   The default frame stops updating and stays hidden; unchecking brings it
   back without a reload. The change waits for combat to end
