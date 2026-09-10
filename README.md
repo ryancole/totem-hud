@@ -75,9 +75,8 @@ and dry/wet mix are constants at the top of the script.
 Releases are built by the [BigWigs packager](https://github.com/BigWigsMods/packager)
 via GitHub Actions (`.github/workflows/release.yml`). Pushing a tag like
 `v0.1.0` packages the addon (with `@project-version@` in the .toc replaced
-by the tag) and attaches the zip to a GitHub release. To also upload to
-CurseForge, add a `## X-Curse-Project-ID` line to the .toc and a
-`CF_API_KEY` repo secret.
+by the tag) and uploads it to CurseForge using the `CF_API_KEY` repo secret
+and the `## X-Curse-Project-ID` in the .toc.
 
 ```bash
 git tag v0.1.0 && git push origin master --tags
