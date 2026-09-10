@@ -1,0 +1,12 @@
+## Interface: 20506
+## Title: Totem HUD
+## Notes: Shows the totems you have down and how long each has left. Shaman only.
+## Category: Class
+## Author: Ryan
+## Version: @project-version@
+## IconTexture: Interface\AddOns\TotemHud\assets\logo.tga
+## SavedVariables: TotemHudDB
+
+src\Core.lua
+src\Hud.lua
+src\Options.lua
