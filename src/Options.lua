@@ -51,6 +51,7 @@ function ns.SetupOptions()
     local defs = {
         { "Lock the HUD in place (it shows sample totems while unlocked)", "locked" },
         { "Keep a dimmed row for each element with no totem down", "showEmptySlots" },
+        { "Show a border around the HUD", "showBorder" },
     }
     local previous = versionText
     for _, def in ipairs(defs) do

@@ -23,6 +23,7 @@ ns.optionDefaults = {
                             -- sample rows so it can be positioned
     showEmptySlots = false, -- keep a dimmed row for each element with no
                             -- totem down, so the list never jumps around
+    showBorder = true,      -- draw the tooltip-style border around the HUD
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",
     frameX = 0,

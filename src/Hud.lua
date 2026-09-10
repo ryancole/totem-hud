@@ -37,6 +37,20 @@ local function SavePosition()
     opts.framePoint, opts.frameRelPoint, opts.frameX, opts.frameY = point, relPoint, x, y
 end
 
+-- Translucent background, with or without the tooltip-style border
+local function ApplyBackdrop()
+    frame:SetBackdrop({
+        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        edgeFile = opts.showBorder and "Interface\\Tooltips\\UI-Tooltip-Border" or nil,
+        tile = true, tileSize = 16, edgeSize = 12,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 },
+    })
+    frame:SetBackdropColor(0, 0, 0, 0.6)
+    if opts.showBorder then
+        frame:SetBackdropBorderColor(0.6, 0.6, 0.6, 0.8)
+    end
+end
+
 -- "4:32" past a minute, whole seconds under it; never below zero
 function ns.FormatTime(seconds)
     seconds = math.max(0, math.floor(seconds + 0.5))
@@ -191,10 +205,11 @@ function ns.UpdateHud()
     SetTicking(#active > 0)
 end
 
--- Re-anchors and redraws after a lock toggle or position reset
+-- Re-anchors and redraws after an option change or position reset
 function ns.RefreshHud()
     if not frame then return end
     Anchor()
+    ApplyBackdrop()
     ns.UpdateHud()
 end
 
@@ -209,14 +224,7 @@ function ns.SetupHud()
     frame:SetClampedToScreen(true)
     frame:SetMovable(true)
     frame:RegisterForDrag("LeftButton")
-    frame:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 12,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 },
-    })
-    frame:SetBackdropColor(0, 0, 0, 0.6)
-    frame:SetBackdropBorderColor(0.6, 0.6, 0.6, 0.8)
+    ApplyBackdrop()
     frame:SetScript("OnDragStart", function(self)
         if not opts.locked then
             self:StartMoving()

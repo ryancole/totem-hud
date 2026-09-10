@@ -82,3 +82,5 @@ git tag v0.1.0 && git push origin master --tags
 - Lock the HUD in place (on by default)
 - Keep a dimmed row for each element with no totem down (off by default;
   on, the list is always four rows tall and never shifts)
+- Show a border around the HUD (on by default; off leaves just the
+  translucent background behind the bars)
