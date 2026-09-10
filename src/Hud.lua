@@ -12,14 +12,16 @@ local ADDON_NAME, ns = ...
 -- in combat: the HUD needs no secure frames.
 
 local WIDTH = 180
-local ROW_HEIGHT = 18
+local MIN_ROW_HEIGHT = 18 -- rows grow past this to fit a large font
 local ROW_GAP = 2
 local PAD = 6
 local TITLE_HEIGHT = 14
-local ICON_SIZE = ROW_HEIGHT - 2
 local WARN_SECONDS = 10 -- time text turns red below this
 local TICK = 0.1 -- seconds between bar updates
 local SAMPLE_DURATION = 120
+-- Cascadia Mono (SIL OFL), the bar text's face; the game ships no
+-- monospace face of its own
+local FONT = "Interface\\AddOns\\" .. ADDON_NAME .. "\\assets\\CascadiaMono.ttf"
 
 local frame
 local rows = {} -- one per ns.slots entry, in that order
@@ -51,6 +53,25 @@ local function ApplyBackdrop()
     end
 end
 
+-- The bar text's face and size. SetFont reports a font it couldn't load
+-- (say, a file added since the client started), in which case the stock
+-- small face is used at the chosen size.
+local function ApplyFont(row)
+    local size = opts.fontSize
+    local stockPath, _, stockFlags = GameFontHighlightSmall:GetFont()
+    for _, fs in ipairs({ row.Name, row.Time }) do
+        if not fs:SetFont(FONT, size, "") then
+            fs:SetFont(stockPath, size, stockFlags or "")
+        end
+    end
+end
+
+-- Row height for the current font: the minimum, or enough to clear the
+-- text with a little air
+local function RowHeight()
+    return math.max(MIN_ROW_HEIGHT, opts.fontSize + 8)
+end
+
 -- "4:32" past a minute, whole seconds under it; never below zero
 function ns.FormatTime(seconds)
     seconds = math.max(0, math.floor(seconds + 0.5))
@@ -62,15 +83,15 @@ end
 
 local function CreateRow(i, def)
     local row = CreateFrame("Frame", nil, frame)
-    row:SetSize(WIDTH - PAD * 2, ROW_HEIGHT)
+    row:SetWidth(WIDTH - PAD * 2)
 
     row.Bar = CreateFrame("StatusBar", nil, row)
-    row.Bar:SetPoint("TOPLEFT", ICON_SIZE + 2, 0)
     row.Bar:SetPoint("BOTTOMRIGHT")
     row.Bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
     row.Bar:SetMinMaxValues(0, 1)
     row.Bar:SetValue(1)
     local r, g, b = unpack(def.color)
+    row.color = def.color
     row.Bar:SetStatusBarColor(r, g, b)
 
     row.Back = row.Bar:CreateTexture(nil, "BACKGROUND")
@@ -78,7 +99,6 @@ local function CreateRow(i, def)
     row.Back:SetColorTexture(r * 0.3, g * 0.3, b * 0.3, 0.6)
 
     row.Icon = row:CreateTexture(nil, "ARTWORK")
-    row.Icon:SetSize(ICON_SIZE, ICON_SIZE)
     row.Icon:SetPoint("LEFT", 0, 0)
     -- Trim the icon's stock border
     row.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
@@ -92,6 +112,9 @@ local function CreateRow(i, def)
     row.Time:SetPoint("RIGHT", -4, 0)
     row.Time:SetJustifyH("RIGHT")
     row.Name:SetPoint("RIGHT", row.Time, "LEFT", -4, 0)
+    ApplyFont(row)
+    -- Height, icon size, and bar inset are set per layout (UpdateHud),
+    -- since they follow the font size
 
     rows[i] = row
     return row
@@ -171,8 +194,17 @@ function ns.UpdateHud()
         y = y - TITLE_HEIGHT
     end
     local shown = 0
+    local height = RowHeight()
     for i, def in ipairs(ns.slots) do
         local row = rows[i] or CreateRow(i, def)
+        row:SetHeight(height)
+        row.Icon:SetSize(height - 2, height - 2)
+        row.Bar:SetPoint("TOPLEFT", height, 0)
+        -- No fill at all, or the fill alone, or fill plus a dim tint
+        -- across the drained part
+        local r, g, b = unpack(row.color)
+        row.Bar:SetStatusBarColor(r, g, b, opts.showBarFill and 1 or 0)
+        row.Back:SetShown(opts.showBarFill and opts.showBarBackground)
         local totem = bySlot[def.slot]
         if totem then
             totem.row = row
@@ -192,7 +224,7 @@ function ns.UpdateHud()
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", PAD, y)
             row:Show()
-            y = y - ROW_HEIGHT - ROW_GAP
+            y = y - height - ROW_GAP
             shown = shown + 1
         else
             row:Hide()
@@ -210,6 +242,9 @@ function ns.RefreshHud()
     if not frame then return end
     Anchor()
     ApplyBackdrop()
+    for _, row in ipairs(rows) do
+        ApplyFont(row)
+    end
     ns.UpdateHud()
 end
 
@@ -219,7 +254,7 @@ function ns.SetupHud()
 
     frame = CreateFrame("Frame", "TotemHudFrame", UIParent, "BackdropTemplate")
     frame:SetWidth(WIDTH)
-    frame:SetHeight(ROW_HEIGHT + PAD * 2)
+    frame:SetHeight(MIN_ROW_HEIGHT + PAD * 2)
     frame:SetFrameStrata("MEDIUM")
     frame:SetClampedToScreen(true)
     frame:SetMovable(true)

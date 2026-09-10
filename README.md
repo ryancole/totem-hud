@@ -17,7 +17,8 @@ nothing.
   under the player frame, per the option
 - `src/Options.lua` — settings panel (Options -> AddOns -> Totem HUD)
 - `assets/` — `logo.png` is the project art; `logo.tga` (addon list icon)
-  is baked from it by `etc/logo.py` (Python + Pillow)
+  is baked from it by `etc/logo.py` (Python + Pillow); `CascadiaMono.ttf`
+  is the bar text's font (see `assets/LICENSE-CascadiaMono.txt`)
 
 ## How it works
 
@@ -34,7 +35,9 @@ While anything is down, a tenth-of-a-second ticker drains each bar from
 the totem's start time and duration and updates the time text, which
 turns red under ten seconds. When the last totem goes, the ticker stops
 and the panel hides. The rank suffix on totem names ("Mana Spring Totem
-IV") is dropped for room.
+IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
+`assets`, since the game ships no monospace face; if the font fails to
+load, the stock small font stands in at the same size.
 
 The HUD is plain frames with no secure buttons, so it updates freely in
 combat.
@@ -86,6 +89,12 @@ git tag v0.1.0 && git push origin master --tags
   on, the list is always four rows tall and never shifts)
 - Show a border around the HUD (on by default; off leaves just the
   translucent background behind the bars)
+- Color each bar by its element (on by default; off, the rows are just
+  icon, name, and time on the panel background)
+  - Color the whole bar, dim where drained (on by default; off, only the
+    remaining-time fill is colored). Only applies while the option above
+    is on
+- Font size, 6 to 16 (7 by default). Rows grow to fit a large font
 - Hide the default totem timers under the player frame (off by default).
   The default frame stops updating and stays hidden; unchecking brings it
   back without a reload. The change waits for combat to end

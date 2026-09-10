@@ -29,7 +29,8 @@ read_globals = {
     -- Namespaces
     "C_AddOns", "Settings",
     -- Frames, fonts, and constants
-    "GameFontHighlightSmall", "GameFontNormal", "GameFontNormalHuge",
+    "GameFontDisable", "GameFontHighlight", "GameFontHighlightSmall",
+    "GameFontNormal", "GameFontNormalHuge",
     "GameFontNormalSmall", "GameTooltip", "NORMAL_FONT_COLOR", "TotemFrame",
     "TotemFrame_Update", "UIParent", "WHITE_FONT_COLOR",
 }

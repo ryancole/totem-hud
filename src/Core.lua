@@ -24,8 +24,13 @@ ns.optionDefaults = {
     showEmptySlots = false, -- keep a dimmed row for each element with no
                             -- totem down, so the list never jumps around
     showBorder = true,      -- draw the tooltip-style border around the HUD
+    showBarFill = true,     -- color each bar by its element; off leaves
+                            -- just icon, name, and time on the panel
+    showBarBackground = true, -- (with showBarFill) also tint the drained
+                              -- part dimly, so the whole bar is colored
     hideBlizzardTotems = false, -- hide the default totem timers under
                                 -- the player frame
+    fontSize = 7,           -- bar text size, in points
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",
     frameX = 0,

@@ -1,7 +1,7 @@
 package-as: TotemHud
 
-# assets ships only the in-game .tga icon; the png master is project art
-# and stays repo-only
+# assets ships the in-game .tga icon and the monospace font with its
+# license; the png master is project art and stays repo-only
 ignore:
   - assets/logo.png
   - README.md
