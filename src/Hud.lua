@@ -15,8 +15,13 @@ local WIDTH = 180
 local MIN_ROW_HEIGHT = 18 -- rows grow past this to fit a large font
 local ROW_GAP = 2
 local PAD = 6
+local INSET = 4 -- icon from the row's left edge, and time text from the bar's right
 local TITLE_HEIGHT = 14
-local WARN_SECONDS = 10 -- time text turns red below this
+local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below this
+-- The 2D quest "!" from the gossip window, hung off a row's left edge
+-- while its totem is about to expire
+local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
+local ALERT_PULSE = 6 -- radians per second; about one pulse a second
 local TICK = 0.1 -- seconds between bar updates
 local SAMPLE_DURATION = 120
 -- Cascadia Mono (SIL OFL), the bar text's face; the game ships no
@@ -99,9 +104,14 @@ local function CreateRow(i, def)
     row.Back:SetColorTexture(r * 0.3, g * 0.3, b * 0.3, 0.6)
 
     row.Icon = row:CreateTexture(nil, "ARTWORK")
-    row.Icon:SetPoint("LEFT", 0, 0)
+    row.Icon:SetPoint("LEFT", INSET, 0)
     -- Trim the icon's stock border
     row.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+    row.Alert = row:CreateTexture(nil, "OVERLAY")
+    row.Alert:SetTexture(ALERT_ICON)
+    row.Alert:SetPoint("RIGHT", row, "LEFT", -2, 0)
+    row.Alert:Hide()
 
     row.Name = row.Bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.Name:SetPoint("LEFT", 4, 0)
@@ -109,7 +119,7 @@ local function CreateRow(i, def)
     row.Name:SetWordWrap(false)
 
     row.Time = row.Bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.Time:SetPoint("RIGHT", -4, 0)
+    row.Time:SetPoint("RIGHT", -INSET, 0)
     row.Time:SetJustifyH("RIGHT")
     row.Name:SetPoint("RIGHT", row.Time, "LEFT", -4, 0)
     ApplyFont(row)
@@ -132,11 +142,14 @@ local function Tick(row, totem)
         row.Bar:SetValue(1)
     end
     row.Time:SetText(ns.FormatTime(left))
-    if left < WARN_SECONDS then
+    local warn = left < WARN_SECONDS
+    if warn then
         row.Time:SetTextColor(1, 0.3, 0.3)
+        row.Alert:SetAlpha(0.7 + 0.3 * math.sin(GetTime() * ALERT_PULSE))
     else
         row.Time:SetTextColor(1, 1, 1)
     end
+    row.Alert:SetShown(warn)
 end
 
 local elapsed = 0
@@ -199,7 +212,8 @@ function ns.UpdateHud()
         local row = rows[i] or CreateRow(i, def)
         row:SetHeight(height)
         row.Icon:SetSize(height - 2, height - 2)
-        row.Bar:SetPoint("TOPLEFT", height, 0)
+        row.Alert:SetSize(height, height)
+        row.Bar:SetPoint("TOPLEFT", INSET + height, 0)
         -- No fill at all, or the fill alone, or fill plus a dim tint
         -- across the drained part
         local r, g, b = unpack(row.color)
@@ -214,6 +228,7 @@ function ns.UpdateHud()
             Tick(row, totem)
         elseif opts.showEmptySlots then
             row.Icon:SetTexture(nil)
+            row.Alert:Hide()
             row.Name:SetText(def.element)
             row.Time:SetText("")
             row.Bar:SetMinMaxValues(0, 1)

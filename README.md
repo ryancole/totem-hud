@@ -32,8 +32,9 @@ default totem bar's order (earth, fire, water, air) so a totem never
 moves when another comes or goes.
 
 While anything is down, a tenth-of-a-second ticker drains each bar from
-the totem's start time and duration and updates the time text, which
-turns red under ten seconds. When the last totem goes, the ticker stops
+the totem's start time and duration and updates the time text. Under ten
+seconds the time turns red and the quest "!" icon pulses just left of
+the row, outside the panel. When the last totem goes, the ticker stops
 and the panel hides. The rank suffix on totem names ("Mana Spring Totem
 IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
 `assets`, since the game ships no monospace face; if the font fails to
