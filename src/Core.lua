@@ -35,6 +35,8 @@ ns.optionDefaults = {
                             -- crosses under the warning time
     deathSound = true,      -- play it too when a totem is killed before
                             -- reaching the warning time
+    groupOnly = false,      -- hide the HUD (and mute it) outside a party
+                            -- or raid; unlocked it still shows samples
     fontSize = 7,           -- bar text size, in points
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",
@@ -114,7 +116,7 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_TOTEM_UPDATE" then
+    if event == "PLAYER_TOTEM_UPDATE" or event == "GROUP_ROSTER_UPDATE" then
         ns.UpdateHud()
     elseif event == "PLAYER_ENTERING_WORLD" then
         -- Totems don't survive a loading screen, but the slot data does
@@ -141,6 +143,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             ns.ApplyBlizzardTotems()
             self:RegisterEvent("PLAYER_TOTEM_UPDATE")
             self:RegisterEvent("PLAYER_ENTERING_WORLD")
+            self:RegisterEvent("GROUP_ROSTER_UPDATE") -- for the group-only option
             -- To tell a Totemic Call from totems being killed
             self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
         end

@@ -216,7 +216,7 @@ end
 -- expiry alert already played). A slot holding a different totem than
 -- last time was re-dropped by the player, and totems gone within a
 -- moment of a Totemic Call were recalled; neither is a death.
-local function NoteDeaths(totems)
+local function NoteDeaths(totems, muted)
     local now = {}
     for _, totem in ipairs(totems) do
         now[totem.def.slot] = totem
@@ -224,7 +224,7 @@ local function NoteDeaths(totems)
     local recalled = GetTime() - recalledAt < RECALL_WINDOW
     for _, def in ipairs(ns.slots) do
         local was = seen[def.slot]
-        if was and not now[def.slot] and not recalled
+        if was and not now[def.slot] and not recalled and not muted
             and ns.TimeLeft(was) > WARN_SECONDS and opts.deathSound then
             PlaySoundFile(ALERT_SOUND, "Master")
         end
@@ -248,10 +248,19 @@ end
 function ns.UpdateHud()
     if not frame then return end
     local unlocked = not opts.locked
-    -- Always scan the real totems, even while showing samples, so a
-    -- death is never missed or misread once the HUD is locked again
+    -- With the group-only option, the HUD is hidden and silent outside a
+    -- party or raid; unlocked it still shows its samples for positioning
+    local hidden = opts.groupOnly and not unlocked and not IsInGroup()
+    -- Always scan the real totems, even while showing samples or hidden,
+    -- so a death is never missed or misread once the HUD is back
     local totems = ns.ScanTotems()
-    NoteDeaths(totems)
+    NoteDeaths(totems, hidden)
+    if hidden then
+        active = {}
+        frame:Hide()
+        SetTicking(false)
+        return
+    end
     active = unlocked and Samples() or totems
 
     -- Which row each totem sits in: slot order, so a totem never moves

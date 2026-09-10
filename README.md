@@ -56,6 +56,11 @@ load, the stock small font stands in at the same size.
 The HUD is plain frames with no secure buttons, so it updates freely in
 combat.
 
+With the group-only option, `IsInGroup()` (any party or raid, home or
+instance) gates the whole layout: outside a group the panel hides, the
+ticker stops, and the death check still tracks slots but stays silent.
+`GROUP_ROSTER_UPDATE` re-runs the layout as groups form and dissolve.
+
 ## Developing
 
 WoW loads an addon from a folder whose name matches the `.toc`, so link this
@@ -119,3 +124,6 @@ git tag v0.1.0 && git push origin master --tags
 - Hide the default totem timers under the player frame (off by default).
   The default frame stops updating and stays hidden; unchecking brings it
   back without a reload. The change waits for combat to end
+- Only show the HUD while in a party or raid (off by default). On, the
+  HUD is hidden and its sounds muted outside a group; unlocked it still
+  shows its sample bars so it can be positioned

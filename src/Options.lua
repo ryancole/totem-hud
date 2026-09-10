@@ -75,6 +75,7 @@ function ns.SetupOptions()
             function() ns.ApplyBlizzardTotems() end },
         { "Play a sound when a totem is about to expire", "expireSound" },
         { "Play a sound when a totem is killed before it expires", "deathSound" },
+        { "Only show the HUD while in a party or raid", "groupOnly" },
     }
     local checks = {}
     local function SyncChildren()
