@@ -18,7 +18,10 @@ nothing.
 - `src/Options.lua` — settings panel (Options -> AddOns -> Totem HUD)
 - `assets/` — `logo.png` is the project art; `logo.tga` (addon list icon)
   is baked from it by `etc/logo.py` (Python + Pillow); `CascadiaMono.ttf`
-  is the bar text's font (see `assets/LICENSE-CascadiaMono.txt`)
+  is the bar text's font (see `assets/LICENSE-CascadiaMono.txt`);
+  `tote.ogg` is the expiry sound, built from a voice recording by
+  `etc/tote.py` (Python + ffmpeg): trimmed to the word, compressed, run
+  through a short synthetic room reverb, and peak-normalized
 
 ## How it works
 
@@ -33,8 +36,10 @@ moves when another comes or goes.
 
 While anything is down, a tenth-of-a-second ticker drains each bar from
 the totem's start time and duration and updates the time text. Under ten
-seconds the time turns red and the quest "!" icon pulses just left of
-the row, outside the panel. When the last totem goes, the ticker stops
+seconds the time turns red, the quest "!" icon pulses just left of the
+row, outside the panel, and `assets/tote.ogg` (Ryan saying "tote") plays
+once on the Master channel. The sound fires once per totem, keyed on the
+totem's start time, so a re-layout can't replay it. When the last totem goes, the ticker stops
 and the panel hides. The rank suffix on totem names ("Mana Spring Totem
 IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
 `assets`, since the game ships no monospace face; if the font fails to
@@ -60,6 +65,10 @@ New-Item -ItemType Junction `
 
 `.\etc\check.ps1` runs luacheck and a LuaJIT parse over `src`; CI runs the
 same luacheck on every push.
+
+`python etc/tote.py <recording>` rebuilds `assets/tote.ogg` from the
+source recording (kept outside the repo). Its trim points, reverb length,
+and dry/wet mix are constants at the top of the script.
 
 ## Releasing
 
@@ -96,6 +105,7 @@ git tag v0.1.0 && git push origin master --tags
     remaining-time fill is colored). Only applies while the option above
     is on
 - Font size, 6 to 16 (7 by default). Rows grow to fit a large font
+- Play a sound when a totem is about to expire (on by default)
 - Hide the default totem timers under the player frame (off by default).
   The default frame stops updating and stays hidden; unchecking brings it
   back without a reload. The change waits for combat to end

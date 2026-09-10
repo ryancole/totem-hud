@@ -30,6 +30,8 @@ ns.optionDefaults = {
                               -- part dimly, so the whole bar is colored
     hideBlizzardTotems = false, -- hide the default totem timers under
                                 -- the player frame
+    expireSound = true,     -- play the "tote" clip once as a totem
+                            -- crosses under the warning time
     fontSize = 7,           -- bar text size, in points
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",

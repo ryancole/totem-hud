@@ -22,6 +22,10 @@ local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below th
 -- while its totem is about to expire
 local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
+-- Ryan saying "tote", played once per totem as it crosses the warning
+-- time. On the Master channel so it is heard even with effects turned
+-- down; it is the whole point of the alert.
+local EXPIRE_SOUND = "Interface\\AddOns\\" .. ADDON_NAME .. "\\assets\\tote.ogg"
 local TICK = 0.1 -- seconds between bar updates
 local SAMPLE_DURATION = 120
 -- Cascadia Mono (SIL OFL), the bar text's face; the game ships no
@@ -33,6 +37,10 @@ local rows = {} -- one per ns.slots entry, in that order
 local opts
 local active = {} -- ns.ScanTotems() result, or samples while unlocked
 local ticking = false
+-- Start time of the totem each slot last played the expiry sound for,
+-- so a re-layout (another totem dropped, an option toggled) doesn't
+-- replay it for the same totem
+local warnedAt = {}
 
 local function Anchor()
     frame:ClearAllPoints()
@@ -146,6 +154,13 @@ local function Tick(row, totem)
     if warn then
         row.Time:SetTextColor(1, 0.3, 0.3)
         row.Alert:SetAlpha(0.7 + 0.3 * math.sin(GetTime() * ALERT_PULSE))
+        local slot = totem.def.slot
+        if warnedAt[slot] ~= totem.startTime then
+            warnedAt[slot] = totem.startTime
+            if opts.expireSound and not totem.sample then
+                PlaySoundFile(EXPIRE_SOUND, "Master")
+            end
+        end
     else
         row.Time:SetTextColor(1, 1, 1)
     end
@@ -178,6 +193,7 @@ local function Samples()
     for _, def in ipairs(ns.slots) do
         list[#list + 1] = {
             def = def,
+            sample = true,
             name = def.element .. " Totem",
             icon = def.sampleIcon,
             startTime = now - SAMPLE_DURATION * 0.4,
