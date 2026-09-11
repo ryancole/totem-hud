@@ -35,7 +35,9 @@ that event and lays out one row per slot in the default totem bar's
 order (earth, fire, water, air): a bar for a slot with a totem, a dimmed
 row naming the element for one without. The panel is always four rows
 tall, so a totem never moves and the panel never resizes as others come
-and go. By default the whole panel hides while no totem is down; an
+and go. In combat, the quest "!" sits steadily beside each empty row,
+since a missing totem matters in a fight; it appears when combat starts
+(`PLAYER_REGEN_DISABLED`) and clears when it ends. By default the whole panel hides while no totem is down; an
 option keeps it up.
 
 While anything is down, a tenth-of-a-second ticker drains each bar from

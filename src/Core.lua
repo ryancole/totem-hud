@@ -118,7 +118,8 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_TOTEM_UPDATE" then
+    if event == "PLAYER_TOTEM_UPDATE"
+        or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         ns.UpdateHud()
     elseif event == "PLAYER_ENTERING_WORLD" then
         -- Totems don't survive a loading screen, but the slot data does
@@ -145,6 +146,9 @@ frame:SetScript("OnEvent", function(self, event, ...)
             ns.ApplyBlizzardTotems()
             self:RegisterEvent("PLAYER_TOTEM_UPDATE")
             self:RegisterEvent("PLAYER_ENTERING_WORLD")
+            -- Combat start and end, for the "!" on empty rows
+            self:RegisterEvent("PLAYER_REGEN_DISABLED")
+            self:RegisterEvent("PLAYER_REGEN_ENABLED")
             -- To tell a Totemic Call from totems being killed
             self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
         end

@@ -268,7 +268,10 @@ function ns.UpdateHud()
         y = y - TITLE_HEIGHT
     end
     -- Always all four rows, a dimmed one for each element with nothing
-    -- down, so the panel never changes size
+    -- down, so the panel never changes size. In combat an empty row also
+    -- gets the "!" (steady, where an expiring totem's pulses): a missing
+    -- totem matters in a fight, and out of one it would only nag.
+    local inCombat = UnitAffectingCombat("player")
     local height = RowHeight()
     for i, def in ipairs(ns.slots) do
         local row = rows[i] or CreateRow(i, def)
@@ -286,16 +289,19 @@ function ns.UpdateHud()
             totem.row = row
             row.Icon:SetTexture(totem.icon)
             row.Name:SetText(totem.name)
-            row:SetAlpha(1)
+            row.Bar:SetAlpha(1)
             Tick(row, totem)
         else
             row.Icon:SetTexture(nil)
-            row.Alert:Hide()
             row.Name:SetText(def.element)
             row.Time:SetText("")
             row.Bar:SetMinMaxValues(0, 1)
             row.Bar:SetValue(0)
-            row:SetAlpha(0.4)
+            -- Dim the bar (and its text) but not the "!", which sits on
+            -- the row itself
+            row.Bar:SetAlpha(0.4)
+            row.Alert:SetAlpha(1)
+            row.Alert:SetShown(inCombat)
         end
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", PAD, y)

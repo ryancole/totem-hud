@@ -16,6 +16,7 @@ Shows shamans a compact list of their active totems with draining timers, and al
 - **One bar per active totem.** Each bar shows the totem's icon, its name, and the time left, and drains as the totem runs out. Bars are tinted for their element.
 - **Stable layout.** Always four rows in the default totem bar's order (earth, fire, water, air), dimmed where nothing is down, so a totem never jumps around and the panel never resizes.
 - **Three-part expiry alert.** Under ten seconds the timer turns red, a quest "!" pulses beside the row, and a short voice cue plays, once per totem.
+- **Missing-totem reminder.** In combat, the same "!" sits beside any element you have nothing down for, so a dead or forgotten totem doesn't go unnoticed mid-fight.
 - **Death alert.** The same voice cue plays when a totem is killed early, so you know to re-drop it. Re-dropping over an old totem or recalling with Totemic Call stays quiet.
 - **Out of the way.** The panel hides while no totem is down (or stays up, if you prefer) and updates freely in combat. Lock it in place, or unlock it to drag it wherever you like.
 - **Replaces the default timers.** One option hides the stock totem icons under the player frame, since the HUD covers them.
