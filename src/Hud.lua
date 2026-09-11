@@ -20,7 +20,8 @@ local INSET = 4 -- time text from the bar's right edge
 local TITLE_HEIGHT = 14
 local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below this
 -- The 2D quest "!" from the gossip window, hung off a row's left edge
--- while its totem is about to expire
+-- (or right, per option) while its totem is about to expire or, in
+-- combat, missing
 local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
 -- Ryan saying "tote", played once per totem as it crosses the warning
@@ -127,8 +128,7 @@ local function CreateRow(i, def)
 
     row.Alert = row:CreateTexture(nil, "OVERLAY")
     row.Alert:SetTexture(ALERT_ICON)
-    row.Alert:SetPoint("RIGHT", row, "LEFT", -2, 0)
-    row.Alert:Hide()
+    row.Alert:Hide() -- anchored per layout, since the side is an option
 
     row.Name = row.Bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.Name:SetPoint("LEFT", 4, 0)
@@ -278,6 +278,12 @@ function ns.UpdateHud()
         row:SetHeight(height)
         row.Icon:SetSize(height - 2, height - 2)
         row.Alert:SetSize(height, height)
+        row.Alert:ClearAllPoints()
+        if opts.alertSide == "RIGHT" then
+            row.Alert:SetPoint("LEFT", row, "RIGHT", 2, 0)
+        else
+            row.Alert:SetPoint("RIGHT", row, "LEFT", -2, 0)
+        end
         row.Bar:SetPoint("TOPLEFT", height, 0)
         -- No fill at all, or the fill alone, or fill plus a dim tint
         -- across the drained part

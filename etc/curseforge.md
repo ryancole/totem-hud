@@ -30,6 +30,7 @@ Shows shamans a compact list of their active totems with draining timers, and al
 - Show a border around the HUD
 - Color each bar by its element, and whether the color covers the whole bar or only the time remaining
 - Font size, 6 to 16
+- Which side of the HUD the "!" alert icon hangs off, left or right
 - Play a sound when a totem is about to expire
 - Play a sound when a totem is killed before it expires
 - Hide the default totem timers under the player frame

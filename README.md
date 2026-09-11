@@ -16,7 +16,9 @@ class it loads and does nothing.
   ticking on a throttled OnUpdate while anything is out
 - `src/BlizzardTotems.lua` — hides and restores the default totem timers
   under the player frame, per the option
-- `src/Options.lua` — settings panel (Options -> AddOns -> Totem HUD)
+- `src/Options.lua` — settings panel (Options -> AddOns -> Totem HUD):
+  checkboxes, the font size slider, the alert-side dropdown, and the
+  reset-position button
 - `assets/` — `logo.png` is the project art; `logo.tga` (addon list icon)
   is baked from it by `etc/logo.py` (Python + Pillow); `CascadiaMono.ttf`
   is the bar text's font (see `assets/LICENSE-CascadiaMono.txt`);
@@ -42,8 +44,8 @@ option keeps it up.
 
 While anything is down, a tenth-of-a-second ticker drains each bar from
 the totem's start time and duration and updates the time text. Under ten
-seconds the time turns red, the quest "!" icon pulses just left of the
-row, outside the panel, and `assets/tote.ogg` (Ryan saying "tote") plays
+seconds the time turns red, the quest "!" icon pulses just outside the
+panel beside the row (on the left, or the right by option), and `assets/tote.ogg` (Ryan saying "tote") plays
 once on the Master channel. The sound fires once per totem, keyed on the
 totem's start time, so a re-layout can't replay it. The same clip plays
 when a totem is killed early: each scan remembers what every slot held,
@@ -117,6 +119,8 @@ git tag v0.1.0 && git push origin master --tags
     remaining-time fill is colored). Only applies while the option above
     is on
 - Font size, 6 to 16 (7 by default). Rows grow to fit a large font
+- Alert icon side, left or right (left by default): which side of the
+  HUD the "!" hangs off
 - Play a sound when a totem is about to expire (on by default)
 - Play a sound when a totem is killed before it expires (on by default).
   Re-dropping a totem over an old one, or recalling them with Totemic

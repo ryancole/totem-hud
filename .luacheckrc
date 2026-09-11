@@ -33,4 +33,8 @@ read_globals = {
     "GameFontNormal", "GameFontNormalHuge",
     "GameFontNormalSmall", "GameTooltip", "NORMAL_FONT_COLOR", "TotemFrame",
     "TotemFrame_Update", "UIParent", "WHITE_FONT_COLOR",
+    -- Legacy dropdown menu
+    "UIDropDownMenu_AddButton", "UIDropDownMenu_CreateInfo",
+    "UIDropDownMenu_Initialize", "UIDropDownMenu_SetSelectedValue",
+    "UIDropDownMenu_SetText", "UIDropDownMenu_SetWidth",
 }

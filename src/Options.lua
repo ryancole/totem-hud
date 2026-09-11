@@ -132,10 +132,49 @@ function ns.SetupOptions()
     end)
     previous = slider
 
+    -- Which side of the HUD the "!" hangs off. The legacy dropdown
+    -- template needs a global name for its textures and button.
+    local sides = {
+        { value = "LEFT", label = "Left" },
+        { value = "RIGHT", label = "Right" },
+    }
+    local sideLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    sideLabel:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", -8, -24)
+    sideLabel:SetText("Alert icon side")
+    local sideDrop = CreateFrame("Frame", "TotemHudAlertSideDropDown", panel, "UIDropDownMenuTemplate")
+    -- The template's art has a built-in left margin of about 16
+    sideDrop:SetPoint("TOPLEFT", sideLabel, "BOTTOMLEFT", -16, -4)
+    UIDropDownMenu_SetWidth(sideDrop, 100)
+    local function ShowSide()
+        for _, side in ipairs(sides) do
+            if side.value == opts.alertSide then
+                UIDropDownMenu_SetSelectedValue(sideDrop, side.value)
+                UIDropDownMenu_SetText(sideDrop, side.label)
+            end
+        end
+    end
+    UIDropDownMenu_Initialize(sideDrop, function(self, level)
+        for _, side in ipairs(sides) do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = side.label
+            info.value = side.value
+            info.checked = opts.alertSide == side.value
+            info.func = function(button)
+                opts.alertSide = button.value
+                ShowSide()
+                ns.RefreshHud()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+    sideDrop:HookScript("OnShow", ShowSide)
+    previous = sideDrop
+
     local resetButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
     resetButton:SetSize(140, 22)
     resetButton:SetText("Reset Position")
-    resetButton:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", -4, -20)
+    -- +20 undoes the dropdown's margin and lines up with the checkboxes
+    resetButton:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 20, -12)
     resetButton:SetScript("OnClick", function()
         for _, k in ipairs({ "framePoint", "frameRelPoint", "frameX", "frameY" }) do
             opts[k] = ns.optionDefaults[k]

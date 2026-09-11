@@ -36,6 +36,8 @@ ns.optionDefaults = {
     deathSound = true,      -- play it too when a totem is killed before
                             -- reaching the warning time
     fontSize = 7,           -- bar text size, in points
+    alertSide = "LEFT",     -- which side of the HUD the "!" hangs off;
+                            -- "LEFT" or "RIGHT"
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",
     frameX = 0,
