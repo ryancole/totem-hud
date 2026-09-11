@@ -24,10 +24,14 @@ local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below th
 -- combat, missing
 local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
--- Ryan saying "tote", played once as a totem goes away, whether it ran
--- out or something killed it. On the Master channel so it is heard even
--- with effects turned down; it is the whole point of the alert.
-local ALERT_SOUND = "Interface\\AddOns\\" .. ADDON_NAME .. "\\assets\\tote.ogg"
+-- The word "totem" from three Windows text-to-speech voices; one at
+-- random plays as a totem goes away, whether it ran out or something
+-- killed it. On the Master channel so it is heard even with effects
+-- turned down; it is the whole point of the alert.
+local ALERT_SOUNDS = {}
+for i = 1, 3 do
+    ALERT_SOUNDS[i] = ("Interface\\AddOns\\%s\\assets\\totem-%d.ogg"):format(ADDON_NAME, i)
+end
 -- Totems vanishing this soon after a Totemic Call were recalled on
 -- purpose, so they don't get the sound
 local RECALL_WINDOW = 1
@@ -212,7 +216,7 @@ local function NoteGone(totems)
     local recalled = GetTime() - recalledAt < RECALL_WINDOW
     for _, def in ipairs(ns.slots) do
         if seen[def.slot] and not now[def.slot] and not recalled and opts.playSound then
-            PlaySoundFile(ALERT_SOUND, "Master")
+            PlaySoundFile(ALERT_SOUNDS[math.random(#ALERT_SOUNDS)], "Master")
         end
         seen[def.slot] = now[def.slot]
     end
