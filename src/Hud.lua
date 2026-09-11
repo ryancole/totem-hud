@@ -16,7 +16,7 @@ local WIDTH = 180
 local MIN_ROW_HEIGHT = 18 -- rows grow past this to fit a large font
 local ROW_GAP = 2
 local PAD = 6
-local INSET = 4 -- icon from the row's left edge, and time text from the bar's right
+local INSET = 4 -- time text from the bar's right edge
 local TITLE_HEIGHT = 14
 local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below this
 -- The 2D quest "!" from the gossip window, hung off a row's left edge
@@ -121,7 +121,7 @@ local function CreateRow(i, def)
     row.Back:SetColorTexture(r * 0.3, g * 0.3, b * 0.3, 0.6)
 
     row.Icon = row:CreateTexture(nil, "ARTWORK")
-    row.Icon:SetPoint("LEFT", INSET, 0)
+    row.Icon:SetPoint("LEFT") -- flush with the row, so its gap to the panel edge matches the bar's
     -- Trim the icon's stock border
     row.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
@@ -275,7 +275,7 @@ function ns.UpdateHud()
         row:SetHeight(height)
         row.Icon:SetSize(height - 2, height - 2)
         row.Alert:SetSize(height, height)
-        row.Bar:SetPoint("TOPLEFT", INSET + height, 0)
+        row.Bar:SetPoint("TOPLEFT", height, 0)
         -- No fill at all, or the fill alone, or fill plus a dim tint
         -- across the drained part
         local r, g, b = unpack(row.color)
