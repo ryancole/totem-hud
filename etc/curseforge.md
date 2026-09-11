@@ -5,19 +5,19 @@ field and the description into the description editor (Markdown mode).
 
 ## Summary
 
-Shows shamans a compact list of their active totems with draining timers, and alerts them with a pulsing icon and a voice cue as each one is about to expire or gets killed.
+Shows shamans a compact list of their active totems with draining timers, and alerts them with a pulsing icon as each one is about to expire and a voice cue when it is gone.
 
 ## Description
 
-**Totem HUD** is a compact timer list for shamans: one bar per totem you have down, draining as it runs out, with a clear alert as each one is about to expire. Drop your totems, glance at the panel, re-drop before they're gone.
+**Totem HUD** is a compact timer list for shamans: one bar per totem you have down, draining as it runs out, with a clear alert as each one is about to expire and a voice cue when it goes. Drop your totems, glance at the panel, re-drop when you hear it.
 
 **Features**
 
 - **One bar per active totem.** Each bar shows the totem's icon, its name, and the time left, and drains as the totem runs out. Bars are tinted for their element.
 - **Stable layout.** Always four rows in the default totem bar's order (earth, fire, water, air), dimmed where nothing is down, so a totem never jumps around and the panel never resizes.
-- **Three-part expiry alert.** Under ten seconds the timer turns red, a quest "!" pulses beside the row, and a short voice cue plays, once per totem.
+- **Expiry warning.** Under ten seconds the timer turns red and a quest "!" pulses beside the row.
 - **Missing-totem reminder.** In combat, the same "!" sits beside any element you have nothing down for, so a dead or forgotten totem doesn't go unnoticed mid-fight.
-- **Death alert.** The same voice cue plays when a totem is killed early, so you know to re-drop it. Re-dropping over an old totem or recalling with Totemic Call stays quiet.
+- **Voice cue when a totem goes.** A short clip plays the moment a totem is gone, whether it ran out or something killed it, so you know to re-drop. Re-dropping over an old totem or recalling with Totemic Call stays quiet.
 - **Out of the way.** The panel hides while no totem is down (or stays up, if you prefer) and updates freely in combat. Lock it in place, or unlock it to drag it wherever you like.
 - **Replaces the default timers.** One option hides the stock totem icons under the player frame, since the HUD covers them.
 - **Your look.** Choose the font size, whether bars are colored by element (the whole bar, or only the time remaining), and whether to show the border. Text is set in Cascadia Mono, bundled with the addon.
@@ -31,8 +31,7 @@ Shows shamans a compact list of their active totems with draining timers, and al
 - Color each bar by its element, and whether the color covers the whole bar or only the time remaining
 - Font size, 6 to 16
 - Which side of the HUD the "!" alert icon hangs off, left or right
-- Play a sound when a totem is about to expire
-- Play a sound when a totem is killed before it expires
+- Play a sound when a totem expires or is killed
 - Hide the default totem timers under the player frame
 
 **Commands**

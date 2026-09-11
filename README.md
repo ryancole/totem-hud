@@ -22,7 +22,7 @@ class it loads and does nothing.
 - `assets/` — `logo.png` is the project art; `logo.tga` (addon list icon)
   is baked from it by `etc/logo.py` (Python + Pillow); `CascadiaMono.ttf`
   is the bar text's font (see `assets/LICENSE-CascadiaMono.txt`);
-  `tote.ogg` is the expiry sound, built from a voice recording by
+  `tote.ogg` is the alert sound, built from a voice recording by
   `etc/tote.py` (Python + ffmpeg): trimmed to the word, compressed, run
   through a short synthetic room reverb, and peak-normalized
 
@@ -44,18 +44,17 @@ option keeps it up.
 
 While anything is down, a tenth-of-a-second ticker drains each bar from
 the totem's start time and duration and updates the time text. Under ten
-seconds the time turns red, the quest "!" icon pulses just outside the
-panel beside the row (on the left, or the right by option), and `assets/tote.ogg` (Ryan saying "tote") plays
-once on the Master channel. The sound fires once per totem, keyed on the
-totem's start time, so a re-layout can't replay it. The same clip plays
-when a totem is killed early: each scan remembers what every slot held,
-and a slot that has gone empty while its totem still had more than ten
-seconds left means something killed it (under ten seconds the expiry
-alert already played). A slot holding a different totem was re-dropped,
-and slots emptied within a second of a Totemic Call (spotted by its
-`UNIT_SPELLCAST_SUCCEEDED`) were recalled; neither counts. The memory
-is cleared on `PLAYER_ENTERING_WORLD`, since totems don't survive a
-loading screen. When the last totem goes, the ticker stops. The rank suffix on totem names ("Mana Spring Totem
+seconds the time turns red and the quest "!" icon pulses just outside
+the panel beside the row (on the left, or the right by option). When the
+totem goes, `assets/tote.ogg` (Ryan saying "tote") plays once on the
+Master channel, whether it ran out or something killed it: each scan
+remembers what every slot held, and a slot that has gone empty since
+the last one gets the sound. A slot holding a different totem was
+re-dropped, and slots emptied within a second of a Totemic Call
+(spotted by its `UNIT_SPELLCAST_SUCCEEDED`) were recalled; neither
+counts. The memory is cleared on `PLAYER_ENTERING_WORLD`, since totems
+don't survive a loading screen. When the last totem goes, the ticker
+stops. The rank suffix on totem names ("Mana Spring Totem
 IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
 `assets`, since the game ships no monospace face; if the font fails to
 load, the stock small font stands in at the same size.
@@ -121,8 +120,7 @@ git tag v0.1.0 && git push origin master --tags
 - Font size, 6 to 16 (7 by default). Rows grow to fit a large font
 - Alert icon side, left or right (left by default): which side of the
   HUD the "!" hangs off
-- Play a sound when a totem is about to expire (on by default)
-- Play a sound when a totem is killed before it expires (on by default).
+- Play a sound when a totem expires or is killed (on by default).
   Re-dropping a totem over an old one, or recalling them with Totemic
   Call, doesn't count
 - Hide the default totem timers under the player frame (off by default).

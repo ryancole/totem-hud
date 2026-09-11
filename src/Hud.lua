@@ -24,13 +24,12 @@ local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below th
 -- combat, missing
 local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
--- Ryan saying "tote", played once per totem as it crosses the warning
--- time, and again if a totem is killed before ever reaching it. On the
--- Master channel so it is heard even with effects turned down; it is
--- the whole point of the alert.
+-- Ryan saying "tote", played once as a totem goes away, whether it ran
+-- out or something killed it. On the Master channel so it is heard even
+-- with effects turned down; it is the whole point of the alert.
 local ALERT_SOUND = "Interface\\AddOns\\" .. ADDON_NAME .. "\\assets\\tote.ogg"
--- Totems vanishing this soon after a Totemic Call were recalled, not
--- killed, so they don't get the death alert
+-- Totems vanishing this soon after a Totemic Call were recalled on
+-- purpose, so they don't get the sound
 local RECALL_WINDOW = 1
 local TICK = 0.1 -- seconds between bar updates
 local SAMPLE_DURATION = 120
@@ -43,12 +42,8 @@ local rows = {} -- one per ns.slots entry, in that order
 local opts
 local active = {} -- ns.ScanTotems() result, or samples while unlocked
 local ticking = false
--- Start time of the totem each slot last played the expiry sound for,
--- so a re-layout (another totem dropped, an option toggled) doesn't
--- replay it for the same totem
-local warnedAt = {}
 -- The totem each slot held at the last real scan, so a slot that has
--- gone empty can be checked for how much time its totem had left
+-- gone empty can be noticed
 local seen = {}
 local recalledAt = 0 -- GetTime() of the last Totemic Call
 
@@ -163,13 +158,6 @@ local function Tick(row, totem)
     if warn then
         row.Time:SetTextColor(1, 0.3, 0.3)
         row.Alert:SetAlpha(0.7 + 0.3 * math.sin(GetTime() * ALERT_PULSE))
-        local slot = totem.def.slot
-        if warnedAt[slot] ~= totem.startTime then
-            warnedAt[slot] = totem.startTime
-            if opts.expireSound and not totem.sample then
-                PlaySoundFile(ALERT_SOUND, "Master")
-            end
-        end
     else
         row.Time:SetTextColor(1, 1, 1)
     end
@@ -212,21 +200,18 @@ local function Samples()
     return list
 end
 
--- Plays the alert for any totem that vanished with more than the warning
--- time left: it was killed, not expired (under the warning time the
--- expiry alert already played). A slot holding a different totem than
+-- Plays the sound for any slot that has gone empty since the last scan:
+-- its totem ran out or was killed. A slot holding a different totem than
 -- last time was re-dropped by the player, and totems gone within a
--- moment of a Totemic Call were recalled; neither is a death.
-local function NoteDeaths(totems)
+-- moment of a Totemic Call were recalled; neither gets the sound.
+local function NoteGone(totems)
     local now = {}
     for _, totem in ipairs(totems) do
         now[totem.def.slot] = totem
     end
     local recalled = GetTime() - recalledAt < RECALL_WINDOW
     for _, def in ipairs(ns.slots) do
-        local was = seen[def.slot]
-        if was and not now[def.slot] and not recalled
-            and ns.TimeLeft(was) > WARN_SECONDS and opts.deathSound then
+        if seen[def.slot] and not now[def.slot] and not recalled and opts.playSound then
             PlaySoundFile(ALERT_SOUND, "Master")
         end
         seen[def.slot] = now[def.slot]
@@ -234,7 +219,7 @@ local function NoteDeaths(totems)
 end
 
 -- Totems don't survive a loading screen; forget them so the empty slots
--- afterwards don't read as deaths
+-- afterwards don't sound
 function ns.ForgetTotems()
     wipe(seen)
 end
@@ -250,9 +235,9 @@ function ns.UpdateHud()
     if not frame then return end
     local unlocked = not opts.locked
     -- Always scan the real totems, even while showing samples, so a
-    -- death is never missed or misread once the HUD is locked again
+    -- totem going away is never missed or misread once locked again
     local totems = ns.ScanTotems()
-    NoteDeaths(totems)
+    NoteGone(totems)
     active = unlocked and Samples() or totems
 
     -- Which row each totem sits in: slot order, so a totem never moves

@@ -31,10 +31,8 @@ ns.optionDefaults = {
                               -- part dimly, so the whole bar is colored
     hideBlizzardTotems = false, -- hide the default totem timers under
                                 -- the player frame
-    expireSound = true,     -- play the "tote" clip once as a totem
-                            -- crosses under the warning time
-    deathSound = true,      -- play it too when a totem is killed before
-                            -- reaching the warning time
+    playSound = true,       -- play the "tote" clip once as a totem goes
+                            -- away, whether it ran out or was killed
     fontSize = 7,           -- bar text size, in points
     alertSide = "LEFT",     -- which side of the HUD the "!" hangs off;
                             -- "LEFT" or "RIGHT"
@@ -54,9 +52,12 @@ local function InitDB()
         end
     end
     -- Options since dropped: rows for empty slots are now always shown,
-    -- and the group-only display (v0.3.0) went with hideWhenEmpty
+    -- the group-only display (v0.3.0) went with hideWhenEmpty, and the
+    -- separate expiry and death sounds became playSound
     opts.showEmptySlots = nil
     opts.groupOnly = nil
+    opts.expireSound = nil
+    opts.deathSound = nil
 end
 
 -------------------------------------------------------------------------------
