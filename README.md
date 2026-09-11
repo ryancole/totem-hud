@@ -2,8 +2,9 @@
 
 WoW TBC Anniversary (2.5.6, Interface 20506) addon for shamans: a small
 on-screen list of the totems you have down, one draining bar per totem
-with its icon, name, and time left. On any other class it loads and does
-nothing.
+with its icon, name, and time left. It is always four rows, dimmed
+where nothing is down, and can hide when no totem is out. On any other
+class it loads and does nothing.
 
 ## Files
 
@@ -30,9 +31,12 @@ each one through `GetTotemInfo`: whether a totem is down, its name, when
 it was placed, how long it lasts, and its icon. `PLAYER_TOTEM_UPDATE`
 fires whenever a slot changes, whether you dropped a totem, recalled it,
 it expired, or something killed it. The HUD re-reads all four slots on
-that event and lays out a bar for each slot that has a totem, in the
-default totem bar's order (earth, fire, water, air) so a totem never
-moves when another comes or goes.
+that event and lays out one row per slot in the default totem bar's
+order (earth, fire, water, air): a bar for a slot with a totem, a dimmed
+row naming the element for one without. The panel is always four rows
+tall, so a totem never moves and the panel never resizes as others come
+and go. By default the whole panel hides while no totem is down; an
+option keeps it up.
 
 While anything is down, a tenth-of-a-second ticker drains each bar from
 the totem's start time and duration and updates the time text. Under ten
@@ -47,19 +51,13 @@ alert already played). A slot holding a different totem was re-dropped,
 and slots emptied within a second of a Totemic Call (spotted by its
 `UNIT_SPELLCAST_SUCCEEDED`) were recalled; neither counts. The memory
 is cleared on `PLAYER_ENTERING_WORLD`, since totems don't survive a
-loading screen. When the last totem goes, the ticker stops and the
-panel hides. The rank suffix on totem names ("Mana Spring Totem
+loading screen. When the last totem goes, the ticker stops. The rank suffix on totem names ("Mana Spring Totem
 IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
 `assets`, since the game ships no monospace face; if the font fails to
 load, the stock small font stands in at the same size.
 
 The HUD is plain frames with no secure buttons, so it updates freely in
 combat.
-
-With the group-only option, `IsInGroup()` (any party or raid, home or
-instance) gates the whole layout: outside a group the panel hides, the
-ticker stops, and the death check still tracks slots but stays silent.
-`GROUP_ROSTER_UPDATE` re-runs the layout as groups form and dissolve.
 
 ## Developing
 
@@ -107,8 +105,8 @@ git tag v0.1.0 && git push origin master --tags
 ## Options
 
 - Lock the HUD in place (on by default)
-- Keep a dimmed row for each element with no totem down (off by default;
-  on, the list is always four rows tall and never shifts)
+- Hide the HUD while no totems are down (on by default; off, the panel
+  stays up with its four dimmed rows)
 - Show a border around the HUD (on by default; off leaves just the
   translucent background behind the bars)
 - Color each bar by its element (on by default; off, the rows are just
@@ -124,6 +122,3 @@ git tag v0.1.0 && git push origin master --tags
 - Hide the default totem timers under the player frame (off by default).
   The default frame stops updating and stays hidden; unchecking brings it
   back without a reload. The change waits for combat to end
-- Only show the HUD while in a party or raid (off by default). On, the
-  HUD is hidden and its sounds muted outside a group; unlocked it still
-  shows its sample bars so it can be positioned

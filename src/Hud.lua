@@ -3,8 +3,9 @@ local ADDON_NAME, ns = ...
 -- The HUD: a small movable panel with one bar per totem down, in the
 -- default totem bar's element order. Each bar is tinted for its element
 -- and drains as the totem runs out, with the totem's icon and name at
--- the left and the time left at the right. Nothing down means nothing
--- shown (unless the empty-slot option keeps a dimmed row per element).
+-- the left and the time left at the right. It is always four rows, a
+-- dimmed one for each element with nothing down, so it never changes
+-- size; an option hides the whole panel while no totem is down.
 -- Unlocking it (it starts locked) shows a sample bar per element so it
 -- can be seen and dragged into place.
 --
@@ -216,7 +217,7 @@ end
 -- expiry alert already played). A slot holding a different totem than
 -- last time was re-dropped by the player, and totems gone within a
 -- moment of a Totemic Call were recalled; neither is a death.
-local function NoteDeaths(totems, muted)
+local function NoteDeaths(totems)
     local now = {}
     for _, totem in ipairs(totems) do
         now[totem.def.slot] = totem
@@ -224,7 +225,7 @@ local function NoteDeaths(totems, muted)
     local recalled = GetTime() - recalledAt < RECALL_WINDOW
     for _, def in ipairs(ns.slots) do
         local was = seen[def.slot]
-        if was and not now[def.slot] and not recalled and not muted
+        if was and not now[def.slot] and not recalled
             and ns.TimeLeft(was) > WARN_SECONDS and opts.deathSound then
             PlaySoundFile(ALERT_SOUND, "Master")
         end
@@ -248,19 +249,10 @@ end
 function ns.UpdateHud()
     if not frame then return end
     local unlocked = not opts.locked
-    -- With the group-only option, the HUD is hidden and silent outside a
-    -- party or raid; unlocked it still shows its samples for positioning
-    local hidden = opts.groupOnly and not unlocked and not IsInGroup()
-    -- Always scan the real totems, even while showing samples or hidden,
-    -- so a death is never missed or misread once the HUD is back
+    -- Always scan the real totems, even while showing samples, so a
+    -- death is never missed or misread once the HUD is locked again
     local totems = ns.ScanTotems()
-    NoteDeaths(totems, hidden)
-    if hidden then
-        active = {}
-        frame:Hide()
-        SetTicking(false)
-        return
-    end
+    NoteDeaths(totems)
     active = unlocked and Samples() or totems
 
     -- Which row each totem sits in: slot order, so a totem never moves
@@ -275,7 +267,8 @@ function ns.UpdateHud()
     if unlocked then
         y = y - TITLE_HEIGHT
     end
-    local shown = 0
+    -- Always all four rows, a dimmed one for each element with nothing
+    -- down, so the panel never changes size
     local height = RowHeight()
     for i, def in ipairs(ns.slots) do
         local row = rows[i] or CreateRow(i, def)
@@ -295,7 +288,7 @@ function ns.UpdateHud()
             row.Name:SetText(totem.name)
             row:SetAlpha(1)
             Tick(row, totem)
-        elseif opts.showEmptySlots then
+        else
             row.Icon:SetTexture(nil)
             row.Alert:Hide()
             row.Name:SetText(def.element)
@@ -304,20 +297,16 @@ function ns.UpdateHud()
             row.Bar:SetValue(0)
             row:SetAlpha(0.4)
         end
-        if totem or opts.showEmptySlots then
-            row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", PAD, y)
-            row:Show()
-            y = y - height - ROW_GAP
-            shown = shown + 1
-        else
-            row:Hide()
-        end
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", PAD, y)
+        row:Show()
+        y = y - height - ROW_GAP
     end
 
     frame:SetHeight(-y - ROW_GAP + PAD)
     frame:EnableMouse(unlocked)
-    frame:SetShown(shown > 0)
+    -- Samples count as down, so the panel shows while unlocked
+    frame:SetShown(#active > 0 or not opts.hideWhenEmpty)
     SetTicking(#active > 0)
 end
 

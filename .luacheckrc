@@ -25,7 +25,7 @@ read_globals = {
     "strlower", "strsplit", "strtrim", "wipe",
     -- API functions
     "CreateFrame", "GetTime", "GetTotemInfo", "GetTotemTimeLeft",
-    "InCombatLockdown", "IsInGroup", "PlaySoundFile", "UnitClass",
+    "InCombatLockdown", "PlaySoundFile", "UnitClass",
     -- Namespaces
     "C_AddOns", "Settings",
     -- Frames, fonts, and constants

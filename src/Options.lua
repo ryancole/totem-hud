@@ -66,7 +66,7 @@ function ns.SetupOptions()
     -- their parent and grey out while it is off.
     local defs = {
         { "Lock the HUD in place (it shows sample totems while unlocked)", "locked" },
-        { "Keep a dimmed row for each element with no totem down", "showEmptySlots" },
+        { "Hide the HUD while no totems are down", "hideWhenEmpty" },
         { "Show a border around the HUD", "showBorder" },
         { "Color each bar by its element", "showBarFill" },
         { "Color the whole bar, dim where drained (off: only the time left)", "showBarBackground",
@@ -75,7 +75,6 @@ function ns.SetupOptions()
             function() ns.ApplyBlizzardTotems() end },
         { "Play a sound when a totem is about to expire", "expireSound" },
         { "Play a sound when a totem is killed before it expires", "deathSound" },
-        { "Only show the HUD while in a party or raid", "groupOnly" },
     }
     local checks = {}
     local function SyncChildren()

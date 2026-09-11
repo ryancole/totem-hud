@@ -22,8 +22,8 @@ local TOTEMIC_CALL = 36936 -- spell ID; recalls every totem at once
 ns.optionDefaults = {
     locked = true,          -- HUD can't be dragged; unlocked, it shows
                             -- sample rows so it can be positioned
-    showEmptySlots = false, -- keep a dimmed row for each element with no
-                            -- totem down, so the list never jumps around
+    hideWhenEmpty = true,   -- hide the whole HUD while no totem is down;
+                            -- off, it stays up with four dimmed rows
     showBorder = true,      -- draw the tooltip-style border around the HUD
     showBarFill = true,     -- color each bar by its element; off leaves
                             -- just icon, name, and time on the panel
@@ -35,8 +35,6 @@ ns.optionDefaults = {
                             -- crosses under the warning time
     deathSound = true,      -- play it too when a totem is killed before
                             -- reaching the warning time
-    groupOnly = false,      -- hide the HUD (and mute it) outside a party
-                            -- or raid; unlocked it still shows samples
     fontSize = 7,           -- bar text size, in points
     framePoint = "CENTER",  -- HUD anchor, saved after each drag
     frameRelPoint = "CENTER",
@@ -53,6 +51,10 @@ local function InitDB()
             opts[k] = v
         end
     end
+    -- Options since dropped: rows for empty slots are now always shown,
+    -- and the group-only display (v0.3.0) went with hideWhenEmpty
+    opts.showEmptySlots = nil
+    opts.groupOnly = nil
 end
 
 -------------------------------------------------------------------------------
@@ -116,7 +118,7 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_TOTEM_UPDATE" or event == "GROUP_ROSTER_UPDATE" then
+    if event == "PLAYER_TOTEM_UPDATE" then
         ns.UpdateHud()
     elseif event == "PLAYER_ENTERING_WORLD" then
         -- Totems don't survive a loading screen, but the slot data does
@@ -143,7 +145,6 @@ frame:SetScript("OnEvent", function(self, event, ...)
             ns.ApplyBlizzardTotems()
             self:RegisterEvent("PLAYER_TOTEM_UPDATE")
             self:RegisterEvent("PLAYER_ENTERING_WORLD")
-            self:RegisterEvent("GROUP_ROSTER_UPDATE") -- for the group-only option
             -- To tell a Totemic Call from totems being killed
             self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
         end
