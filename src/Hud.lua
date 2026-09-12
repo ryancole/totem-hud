@@ -36,17 +36,23 @@ local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
 local RANGE_ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 local RANGE_ICON_COORDS = { 0.5, 0.75, 0.25, 0.5 } -- left, right, top, bottom; nil for a whole file
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
--- The word "totem" from three Windows text-to-speech voices; one at
--- random plays as a totem goes away, whether it ran out or something
--- killed it. On the Master channel so it is heard even with effects
--- turned down; it is the whole point of the alert.
+-- Three spoken alerts from a Windows text-to-speech voice: "totem
+-- expiring" as a totem runs out, "totem dead" as something kills one
+-- early, and "totem distance" as the player leaves a totem's range. On
+-- the Master channel so they are heard even with effects turned down;
+-- they are the whole point of the alert.
 local ALERT_SOUNDS = {}
-for i = 1, 3 do
-    ALERT_SOUNDS[i] = ("Interface\\AddOns\\%s\\assets\\totem-%d.ogg"):format(ADDON_NAME, i)
+for _, kind in ipairs({ "expiring", "dead", "distance" }) do
+    ALERT_SOUNDS[kind] = ("Interface\\AddOns\\%s\\assets\\%s.ogg"):format(ADDON_NAME, kind)
 end
 -- Totems vanishing this soon after a Totemic Call were recalled on
 -- purpose, so they don't get the sound
 local RECALL_WINDOW = 1
+-- A totem gone with more than this many seconds left was killed rather
+-- than expired. The totem update lags the expiry by a fraction of a
+-- second, and the start time the client reports is itself a little
+-- fuzzy, so a natural expiry can read as slightly early.
+local KILL_SLACK = 1
 local TICK = 0.1 -- seconds between bar updates
 local SAMPLE_DURATION = 120
 -- Cascadia Mono (SIL OFL), the bar text's face; the game ships no
@@ -165,9 +171,9 @@ local function CreateRow(i, def)
     return row
 end
 
--- One of the voice clips, at random
-local function PlayAlert()
-    PlaySoundFile(ALERT_SOUNDS[math.random(#ALERT_SOUNDS)], "Master")
+-- The voice clip for the alert; `kind` is "expiring" or "distance"
+local function PlayAlert(kind)
+    PlaySoundFile(ALERT_SOUNDS[kind], "Master")
 end
 
 -- The first alert icon's gap from the row: past the panel edge (the
@@ -198,8 +204,8 @@ end
 -- pulse beside the row, the "!" nearest and the red X beyond it: the
 -- "!" as the totem is about to run out (time text red too) and the X
 -- while the player is out of its range. Going out of range also gets
--- the voice cue, once per exit, when sounds are on: for the player, a
--- totem out of reach is as good as gone.
+-- the "totem distance" voice cue, once per exit, when sounds are on:
+-- for the player, a totem out of reach is as good as gone.
 local function Tick(row, totem)
     local left = ns.TimeLeft(totem)
     local duration = totem.duration
@@ -218,7 +224,7 @@ local function Tick(row, totem)
         out, first = ns.OutOfRange(totem)
     end
     if first and opts.playSound then
-        PlayAlert()
+        PlayAlert("distance")
     end
     local pulse = 0.7 + 0.3 * math.sin(GetTime() * ALERT_PULSE)
     row.Alert:SetAlpha(pulse)
@@ -263,9 +269,11 @@ local function Samples()
 end
 
 -- Plays the sound for any slot that has gone empty since the last scan:
--- its totem ran out or was killed. A slot holding a different totem than
--- last time was re-dropped by the player, and totems gone within a
--- moment of a Totemic Call were recalled; neither gets the sound.
+-- "totem expiring" if its totem had run its course, "totem dead" if it
+-- still had time left, so something killed it. A slot holding a
+-- different totem than last time was re-dropped by the player, and
+-- totems gone within a moment of a Totemic Call were recalled; neither
+-- gets a sound.
 local function NoteGone(totems)
     local now = {}
     for _, totem in ipairs(totems) do
@@ -273,8 +281,9 @@ local function NoteGone(totems)
     end
     local recalled = GetTime() - recalledAt < RECALL_WINDOW
     for _, def in ipairs(ns.slots) do
-        if seen[def.slot] and not now[def.slot] and not recalled and opts.playSound then
-            PlayAlert()
+        local was = seen[def.slot]
+        if was and not now[def.slot] and not recalled and opts.playSound then
+            PlayAlert(ns.TimeLeft(was) > KILL_SLACK and "dead" or "expiring")
         end
         seen[def.slot] = now[def.slot]
     end

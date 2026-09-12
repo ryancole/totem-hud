@@ -31,9 +31,10 @@ ns.optionDefaults = {
                               -- part dimly, so the whole bar is colored
     hideBlizzardTotems = false, -- hide the default totem timers under
                                 -- the player frame
-    playSound = true,       -- play the "totem" clip once as a totem goes
-                            -- away, whether it ran out or was killed,
-                            -- and once as the player leaves one's range
+    playSound = true,       -- say "totem expiring" once as a totem runs
+                            -- out, "totem dead" once as one is killed,
+                            -- and "totem distance" once as the player
+                            -- leaves one's range
     fontSize = 7,           -- bar text size, in points
     alertSide = "LEFT",     -- which side of the HUD the "!" hangs off;
                             -- "LEFT" or "RIGHT"
