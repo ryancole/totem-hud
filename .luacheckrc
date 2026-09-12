@@ -26,8 +26,9 @@ read_globals = {
     -- API functions
     "CreateFrame", "GetTime", "GetTotemInfo", "GetTotemTimeLeft",
     "InCombatLockdown", "PlaySoundFile", "UnitAffectingCombat", "UnitClass",
+    "UnitIsDeadOrGhost",
     -- Namespaces
-    "C_AddOns", "Settings",
+    "C_AddOns", "C_UnitAuras", "Settings",
     -- Frames, fonts, and constants
     "GameFontDisable", "GameFontHighlight", "GameFontHighlightSmall",
     "GameFontNormal", "GameFontNormalHuge",
