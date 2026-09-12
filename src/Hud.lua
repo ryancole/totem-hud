@@ -37,12 +37,12 @@ local RANGE_ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 local RANGE_ICON_COORDS = { 0.5, 0.75, 0.25, 0.5 } -- left, right, top, bottom; nil for a whole file
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
 -- Three spoken alerts from a Windows text-to-speech voice: "totem
--- expiring" as a totem runs out, "totem dead" as something kills one
+-- expired" as a totem runs out, "totem dead" as something kills one
 -- early, and "totem distance" as the player leaves a totem's range. On
 -- the Master channel so they are heard even with effects turned down;
 -- they are the whole point of the alert.
 local ALERT_SOUNDS = {}
-for _, kind in ipairs({ "expiring", "dead", "distance" }) do
+for _, kind in ipairs({ "expired", "dead", "distance" }) do
     ALERT_SOUNDS[kind] = ("Interface\\AddOns\\%s\\assets\\%s.ogg"):format(ADDON_NAME, kind)
 end
 -- Totems vanishing this soon after a Totemic Call were recalled on
@@ -177,7 +177,7 @@ local function CreateRow(i, def)
     return row
 end
 
--- The voice clip for the alert; `kind` is "expiring" or "distance"
+-- The voice clip for the alert; `kind` is "expired" or "distance"
 local function PlayAlert(kind)
     PlaySoundFile(ALERT_SOUNDS[kind], "Master")
 end
@@ -277,7 +277,7 @@ local function Samples()
 end
 
 -- Plays the sound for any slot that has gone empty since the last scan:
--- "totem expiring" if its totem had run its course, "totem dead" if it
+-- "totem expired" if its totem had run its course, "totem dead" if it
 -- still had time left, so something killed it. A slot holding a
 -- different totem than last time was re-dropped by the player, and
 -- totems gone within a moment of a Totemic Call were recalled; neither
@@ -291,7 +291,7 @@ local function NoteGone(totems)
     for _, def in ipairs(ns.slots) do
         local was = seen[def.slot]
         if was and not now[def.slot] and not recalled and opts.playSound then
-            PlayAlert(ns.TimeLeft(was) > KILL_SLACK and "dead" or "expiring")
+            PlayAlert(ns.TimeLeft(was) > KILL_SLACK and "dead" or "expired")
         end
         seen[def.slot] = now[def.slot]
     end

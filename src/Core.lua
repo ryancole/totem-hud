@@ -31,7 +31,7 @@ ns.optionDefaults = {
                               -- part dimly, so the whole bar is colored
     hideBlizzardTotems = false, -- hide the default totem timers under
                                 -- the player frame
-    playSound = true,       -- say "totem expiring" once as a totem runs
+    playSound = true,       -- say "totem expired" once as a totem runs
                             -- out, "totem dead" once as one is killed,
                             -- and "totem distance" once as the player
                             -- leaves one's range

@@ -1,4 +1,4 @@
-# Builds the alert sounds: "totem expiring" as assets/expiring.ogg, for
+# Builds the alert sounds: "totem expired" as assets/expired.ogg, for
 # a totem running out, "totem dead" as assets/dead.ogg, for one killed
 # early, and "totem distance" as assets/distance.ogg, for the player
 # leaving a totem's range. All are spoken by one of Windows' built-in
@@ -12,7 +12,7 @@
 # Usage: .\etc\alert.ps1 (works from any directory)
 
 $voice = "Microsoft David"
-$phrases = @{ expiring = "Totem expiring"; dead = "Totem dead"; distance = "Totem distance" }
+$phrases = @{ expired = "Totem expired"; dead = "Totem dead"; distance = "Totem distance" }
 
 $assets = Join-Path (Split-Path $PSScriptRoot) "assets"
 $tmp = Join-Path ([IO.Path]::GetTempPath()) "totem-hud-alert"
