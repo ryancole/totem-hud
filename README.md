@@ -62,6 +62,29 @@ IV") is dropped for room. Bar text is set in Cascadia Mono, bundled in
 `assets`, since the game ships no monospace face; if the font fails to
 load, the stock small font stands in at the same size.
 
+A totem's range is watched by way of its buff. A totem can't be asked
+where it is, and the game hides positions in instances, but a buff
+totem (Windfury, Strength of Earth, Mana Spring, and so on) keeps its
+buff on everyone in range, the shaman included, so the buff leaving the
+player means they have walked out of range. The buff carries the
+`Core.lua` lists the totems that give a buff, by name; Searing, Tremor,
+Grounding, and the like are never judged. The buff carries the totem's
+own icon, and that is how the two are matched: the player's buffs are
+re-read by icon on every `UNIT_AURA`, and each tick checks whether a
+listed totem's icon is among them. The buff being gone for half a
+second marks the player out of range: the raid target cross, a red X,
+pulses beside the row, and with sounds on, the voice cue plays once per
+exit. The icons pack outward from the row, the "!" nearest and the X
+beyond it, each only while it applies, so both show for a totem that is
+out of range and about to run out. A totem under two seconds old isn't
+judged, since its buff is still landing; the last moment and a half of
+its life is left to the expiry alert, since the buff and the totem go
+in separate updates as it runs out; and a dead player, who has no buffs
+at all, is never out of range. A totem found without its buff before
+the buff was ever seen (it was down before the addon looked: a
+`/reload`) is marked out of range at once, but without the cue, which
+marks the moment of leaving range.
+
 The HUD is plain frames with no secure buttons, so it updates freely in
 combat.
 
@@ -108,7 +131,8 @@ git tag v0.1.0 && git push origin master --tags
   unlock it so it can be dragged. While unlocked it shows a sample bar per
   element so you can see where it is
 - `/th reset` — move the HUD back to its default spot
-- `/th list` — print your totems and their remaining time to chat
+- `/th list` — print your totems and their remaining time to chat, noting
+  any you are out of range of
 
 ## Options
 
@@ -125,9 +149,10 @@ git tag v0.1.0 && git push origin master --tags
 - Font size, 6 to 16 (7 by default). Rows grow to fit a large font
 - Alert icon side, left or right (left by default): which side of the
   HUD the "!" hangs off
-- Play a sound when a totem expires or is killed (on by default).
-  Re-dropping a totem over an old one, or recalling them with Totemic
-  Call, doesn't count
+- Play a sound when a totem expires or is killed, or you leave its
+  range (on by default). Re-dropping a totem over an old one, or
+  recalling them with Totemic Call, doesn't count; leaving range plays
+  it once per exit
 - Hide the default totem timers under the player frame (off by default).
   The default frame stops updating and stays hidden; unchecking brings it
   back without a reload. The change waits for combat to end

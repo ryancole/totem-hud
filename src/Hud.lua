@@ -19,10 +19,22 @@ local PAD = 6
 local INSET = 4 -- time text from the bar's right edge
 local TITLE_HEIGHT = 14
 local WARN_SECONDS = 10 -- time text turns red and the alert icon shows below this
--- The 2D quest "!" from the gossip window, hung off a row's left edge
--- (or right, per option) while its totem is about to expire or, in
--- combat, missing
+-- The 2D quest "!" from the gossip window, hung off the panel's left
+-- edge (or right, per option) beside a row while its totem is about to
+-- expire or, in combat, missing. Other flat icons the client ships that would read
+-- as "out of range" in its place: Interface\Minimap\MiniMap-QuestArrow
+-- (the minimap-edge arrow to something off the map) and
+-- Interface\Buttons\UI-GroupLoot-Pass-Up (the loot roll's red X).
 local ALERT_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
+-- The raid target "cross", a plain red X with no circle, cut from the
+-- sheet of eight raid markers (4 by 2; the cross is the seventh), hung
+-- beyond the "!" while the player is out of the totem's range; both
+-- show when both apply. (Tried and passed over: the ready check's X in
+-- a circle, Interface\RaidFrame\ReadyCheck-NotReady; the loot roll's
+-- pass mark, Interface\Buttons\UI-GroupLoot-Pass-Up, also circled; and
+-- the minimap's edge arrow, Interface\Minimap\MiniMap-QuestArrow.)
+local RANGE_ICON = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
+local RANGE_ICON_COORDS = { 0.5, 0.75, 0.25, 0.5 } -- left, right, top, bottom; nil for a whole file
 local ALERT_PULSE = 6 -- radians per second; about one pulse a second
 -- The word "totem" from three Windows text-to-speech voices; one at
 -- random plays as a totem goes away, whether it ran out or something
@@ -127,7 +139,14 @@ local function CreateRow(i, def)
 
     row.Alert = row:CreateTexture(nil, "OVERLAY")
     row.Alert:SetTexture(ALERT_ICON)
-    row.Alert:Hide() -- anchored per layout, since the side is an option
+    row.Alert:Hide() -- anchored as shown (Hang), since the side is an option
+
+    row.Range = row:CreateTexture(nil, "OVERLAY")
+    row.Range:SetTexture(RANGE_ICON)
+    if RANGE_ICON_COORDS then
+        row.Range:SetTexCoord(unpack(RANGE_ICON_COORDS))
+    end
+    row.Range:Hide() -- likewise
 
     row.Name = row.Bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.Name:SetPoint("LEFT", 4, 0)
@@ -146,7 +165,41 @@ local function CreateRow(i, def)
     return row
 end
 
--- The bar and time text for one totem; called every tick
+-- One of the voice clips, at random
+local function PlayAlert()
+    PlaySoundFile(ALERT_SOUNDS[math.random(#ALERT_SOUNDS)], "Master")
+end
+
+-- The first alert icon's gap from the row: past the panel edge (the
+-- row sits PAD inside it) and then PAD more, so the panel's margin to
+-- the icon matches its margin to the bar
+local ICON_GAP = PAD * 2
+local ICON_SPACING = 2 -- between two icons
+
+-- Shows or hides one alert icon and, shown, hangs it `gap` off the
+-- outer side of `anchor` (the row, or the icon before it) on the
+-- option's side. Returns the next icon's anchor and gap, so the icons
+-- pack outward from the row with no hole where a hidden one would sit.
+local function Hang(icon, shown, anchor, gap)
+    icon:SetShown(shown)
+    if not shown then
+        return anchor, gap
+    end
+    icon:ClearAllPoints()
+    if opts.alertSide == "RIGHT" then
+        icon:SetPoint("LEFT", anchor, "RIGHT", gap, 0)
+    else
+        icon:SetPoint("RIGHT", anchor, "LEFT", -gap, 0)
+    end
+    return icon, ICON_SPACING
+end
+
+-- The bar and time text for one totem; called every tick. Two alerts
+-- pulse beside the row, the "!" nearest and the red X beyond it: the
+-- "!" as the totem is about to run out (time text red too) and the X
+-- while the player is out of its range. Going out of range also gets
+-- the voice cue, once per exit, when sounds are on: for the player, a
+-- totem out of reach is as good as gone.
 local function Tick(row, totem)
     local left = ns.TimeLeft(totem)
     local duration = totem.duration
@@ -159,13 +212,18 @@ local function Tick(row, totem)
     end
     row.Time:SetText(ns.FormatTime(left))
     local warn = left < WARN_SECONDS
-    if warn then
-        row.Time:SetTextColor(1, 0.3, 0.3)
-        row.Alert:SetAlpha(0.7 + 0.3 * math.sin(GetTime() * ALERT_PULSE))
-    else
-        row.Time:SetTextColor(1, 1, 1)
+    row.Time:SetTextColor(1, warn and 0.3 or 1, warn and 0.3 or 1)
+    local out, first = false, false
+    if not totem.sample then
+        out, first = ns.OutOfRange(totem)
     end
-    row.Alert:SetShown(warn)
+    if first and opts.playSound then
+        PlayAlert()
+    end
+    local pulse = 0.7 + 0.3 * math.sin(GetTime() * ALERT_PULSE)
+    row.Alert:SetAlpha(pulse)
+    row.Range:SetAlpha(pulse)
+    Hang(row.Range, out, Hang(row.Alert, warn, row, ICON_GAP))
 end
 
 local elapsed = 0
@@ -216,7 +274,7 @@ local function NoteGone(totems)
     local recalled = GetTime() - recalledAt < RECALL_WINDOW
     for _, def in ipairs(ns.slots) do
         if seen[def.slot] and not now[def.slot] and not recalled and opts.playSound then
-            PlaySoundFile(ALERT_SOUNDS[math.random(#ALERT_SOUNDS)], "Master")
+            PlayAlert()
         end
         seen[def.slot] = now[def.slot]
     end
@@ -267,12 +325,7 @@ function ns.UpdateHud()
         row:SetHeight(height)
         row.Icon:SetSize(height - 2, height - 2)
         row.Alert:SetSize(height, height)
-        row.Alert:ClearAllPoints()
-        if opts.alertSide == "RIGHT" then
-            row.Alert:SetPoint("LEFT", row, "RIGHT", 2, 0)
-        else
-            row.Alert:SetPoint("RIGHT", row, "LEFT", -2, 0)
-        end
+        row.Range:SetSize(height, height)
         row.Bar:SetPoint("TOPLEFT", height, 0)
         -- No fill at all, or the fill alone, or fill plus a dim tint
         -- across the drained part
@@ -296,7 +349,8 @@ function ns.UpdateHud()
             -- the row itself
             row.Bar:SetAlpha(0.4)
             row.Alert:SetAlpha(1)
-            row.Alert:SetShown(inCombat)
+            Hang(row.Alert, inCombat, row, ICON_GAP)
+            row.Range:Hide()
         end
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", PAD, y)
