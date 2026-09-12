@@ -46,7 +46,8 @@ for _, kind in ipairs({ "expiring", "dead", "distance" }) do
     ALERT_SOUNDS[kind] = ("Interface\\AddOns\\%s\\assets\\%s.ogg"):format(ADDON_NAME, kind)
 end
 -- Totems vanishing this soon after a Totemic Call were recalled on
--- purpose, so they don't get the sound
+-- purpose, so they don't get the sound; nor is their range judged in
+-- that moment, since the buff can go before the totem update does
 local RECALL_WINDOW = 1
 -- A totem gone with more than this many seconds left was killed rather
 -- than expired. The totem update lags the expiry by a fraction of a
@@ -68,6 +69,11 @@ local ticking = false
 -- gone empty can be noticed
 local seen = {}
 local recalledAt = 0 -- GetTime() of the last Totemic Call
+
+-- Whether a Totemic Call was cast within the last RECALL_WINDOW
+local function Recalled()
+    return GetTime() - recalledAt < RECALL_WINDOW
+end
 
 local function Anchor()
     frame:ClearAllPoints()
@@ -205,7 +211,9 @@ end
 -- "!" as the totem is about to run out (time text red too) and the X
 -- while the player is out of its range. Going out of range also gets
 -- the "totem distance" voice cue, once per exit, when sounds are on:
--- for the player, a totem out of reach is as good as gone.
+-- for the player, a totem out of reach is as good as gone. Not judged
+-- just after a Totemic Call: the buff leaves before the totem does,
+-- and that gap would read as leaving range.
 local function Tick(row, totem)
     local left = ns.TimeLeft(totem)
     local duration = totem.duration
@@ -220,7 +228,7 @@ local function Tick(row, totem)
     local warn = left < WARN_SECONDS
     row.Time:SetTextColor(1, warn and 0.3 or 1, warn and 0.3 or 1)
     local out, first = false, false
-    if not totem.sample then
+    if not totem.sample and not Recalled() then
         out, first = ns.OutOfRange(totem)
     end
     if first and opts.playSound then
@@ -279,7 +287,7 @@ local function NoteGone(totems)
     for _, totem in ipairs(totems) do
         now[totem.def.slot] = totem
     end
-    local recalled = GetTime() - recalledAt < RECALL_WINDOW
+    local recalled = Recalled()
     for _, def in ipairs(ns.slots) do
         local was = seen[def.slot]
         if was and not now[def.slot] and not recalled and opts.playSound then

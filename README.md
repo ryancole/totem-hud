@@ -87,7 +87,9 @@ in separate updates as it runs out; and a dead player, who has no buffs
 at all, is never out of range. A totem found without its buff before
 the buff was ever seen (it was down before the addon looked: a
 `/reload`) is marked out of range at once, but without the cue, which
-marks the moment of leaving range.
+marks the moment of leaving range. Nothing is judged within a second of
+a Totemic Call: the buff can leave before the totem update arrives, and
+that gap would otherwise read as leaving range.
 
 The HUD is plain frames with no secure buttons, so it updates freely in
 combat.
